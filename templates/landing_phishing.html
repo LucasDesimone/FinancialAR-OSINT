@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ banco_nombre }} - Sesión Expirada</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 0;
+            border-radius: 12px 12px 0 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .bank-logo {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+        }
+
+        .bank-logo-text {
+            padding: 60px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .bank-logo-text h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+        }
+
+        .bank-logo-text p {
+            margin: 10px 0 0 0;
+            font-size: 1rem;
+            font-weight: 400;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px 30px;
+        }
+
+        .alert {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #856404;
+        }
+
+        .alert i {
+            font-size: 24px;
+            color: #ffc107;
+        }
+
+        .alert span {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .message {
+            color: #555;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+            background: white;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: {{ color_banco }};
+        }
+
+        .input-group input::placeholder {
+            color: #bdc3c7;
+        }
+
+        .checkbox-group {
+            margin: 20px 0;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            font-size: 14px;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .link-extra {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #007bff;
+            font-size: 14px;
+            text-decoration: none;
+            margin-bottom: 12px;
+        }
+
+        .link-extra i {
+            font-size: 16px;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .links-footer {
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .link-footer {
+            display: block;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 14px;
+            margin: 10px 0;
+            transition: color 0.3s;
+        }
+
+        .link-footer:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        .link-footer.primary {
+            color: #e74c3c;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 13px;
+        }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #27ae60;
+            font-size: 13px;
+        }
+
+        .secure-badge i {
+            font-size: 16px;
+        }
+
+        /* Modal de Alerta */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 10% auto;
+            padding: 40px;
+            border-radius: 16px;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-button:hover {
+            color: #000;
+        }
+
+        .modal-content h2 {
+            color: #e74c3c;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .modal-content p {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .modal-content strong {
+            color: #e74c3c;
+            font-weight: 700;
+        }
+
+        .modal-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                padding: 30px 20px;
+            }
+
+            .title {
+                font-size: 20px;
+            }
+
+            .modal-content {
+                margin: 20% auto;
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header con logo del banco -->
+        <div class="header" style="background-color: {{ color_banco }};">
+            {% if logo_archivo %}
+                <img src="{{ url_for('static', filename='images/' + logo_archivo) }}" alt="{{ banco_nombre }}" class="bank-logo">
+            {% else %}
+                <!-- Banner genérico con nombre del banco -->
+                <div class="bank-logo-text">
+                    <h1>{{ banco_nombre }}</h1>
+                    <p>Banca en Línea</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Card principal -->
+        <div class="card">
+            <!-- Alerta de sesión expirada -->
+            <div class="alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Sesión Expirada</span>
+            </div>
+
+            <!-- Título -->
+            <h1 class="title">{{ titulo }}</h1>
+            {% if subtitulo %}
+            <p class="subtitle">{{ subtitulo }}</p>
+            {% endif %}
+
+            <p class="message">Por razones de seguridad, su sesión ha expirado. Por favor, ingrese sus credenciales para continuar.</p>
+
+            <!-- Formulario dinámico -->
+            <form id="loginForm">
+                {% for campo in campos %}
+                <div class="input-group">
+                    <label for="{{ campo.nombre }}">{{ campo.label }}</label>
+                    {% if campo.tipo == 'select' %}
+                        <select id="{{ campo.nombre }}" name="{{ campo.nombre }}" required>
+                            {% for opcion in campo.opciones %}
+                            <option value="{{ opcion }}">{{ opcion }}</option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        <input 
+                            type="{{ campo.tipo }}" 
+                            id="{{ campo.nombre }}" 
+                            name="{{ campo.nombre }}" 
+                            {% if campo.placeholder %}placeholder="{{ campo.placeholder }}"{% endif %}
+                            required
+                        >
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <!-- Checkboxes y extras -->
+                {% if extras %}
+                <div class="checkbox-group">
+                    {% for extra in extras %}
+                        {% if 'Teclado' in extra %}
+                        <a href="#" class="link-extra" onclick="return false;">
+                            <i class="fas fa-keyboard"></i>
+                            <span>{{ extra }}</span>
+                        </a>
+                        {% else %}
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="extra{{ loop.index }}" name="extra{{ loop.index }}">
+                            <label for="extra{{ loop.index }}">{{ extra }}</label>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Botón de ingreso -->
+                <button type="submit" class="btn-login" style="background-color: {{ color_banco }};">
+                    {{ texto_boton }}
+                </button>
+            </form>
+
+            <!-- Links adicionales -->
+            {% if links_adicionales %}
+            <div class="links-footer">
+                {% for link in links_adicionales %}
+                    {% if 'OLVIDÉ' in link or 'BLOQUEÉ' in link or 'Olvidé' in link or 'bloqueaste' in link or 'Recupero' in link %}
+                    <a href="#" class="link-footer primary" onclick="return false;">{{ link }}</a>
+                    {% else %}
+                    <a href="#" class="link-footer" onclick="return false;">{{ link }}</a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Badge de conexión segura -->
+            <div class="secure-badge">
+                <i class="fas fa-lock"></i>
+                <span>Conexión segura SSL</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Alerta de Seguridad -->
+    <div id="securityModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>⚠️ ALERTA DE SEGURIDAD</h2>
+            <p>Esto es una <strong>DEMOSTRACIÓN EDUCATIVA</strong>.</p>
+            <p>En un ataque real, sus credenciales habrían sido <strong>ROBADAS</strong>.</p>
+            <p><strong>NUNCA</strong> ingrese sus datos en sitios que lleguen por correo electrónico o mensajes inesperados.</p>
+            <p>Verifique siempre la URL y la legitimidad del remitente.</p>
+            <div class="modal-footer">
+                <span class="badge">Social Engineering Village</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Modal de seguridad
+        const modal = document.getElementById('securityModal');
+        const closeButton = document.querySelector('.close-button');
+        const loginForm = document.getElementById('loginForm');
+
+        // Prevenir envío del formulario y mostrar modal
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            modal.style.display = 'block';
+        });
+
+        // Cerrar modal al hacer clic en X
+        closeButton.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        // Cerrar modal al hacer clic fuera de él
+        window.addEventListener('click', function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Prevenir que los links naveguen
+        document.querySelectorAll('.link-footer, .link-extra').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                return false;
+            });
+        });
+    </script>
+</body>
+</html>

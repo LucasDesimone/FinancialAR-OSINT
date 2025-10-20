@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinancialAR OSINT - Consulta de Deudas BCRA</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Banner Header -->
+        <header class="banner-header">
+            <div class="banner-image">
+                <img src="{{ url_for('static', filename='images/banner_financialAR_osint.png') }}" alt="FinancialAR OSINT - Social Engineering Village">
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Consulta Section -->
+            <section class="consulta-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-search"></i> Consultar Deudas</h2>
+                        <p>Busca por CUIT o por nombre y apellido en la base AFIP</p>
+                    </div>
+                    
+                    <!-- Tabs -->
+                    <div class="tabs">
+                        <button class="tab-button active" onclick="cambiarTab('cuit')">
+                            <i class="fas fa-id-card"></i> Buscar por CUIT
+                        </button>
+                        <button class="tab-button" onclick="cambiarTab('nombre')">
+                            <i class="fas fa-user"></i> Buscar por Nombre
+                        </button>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- Tab: Búsqueda por CUIT -->
+                        <div id="tabCuit" class="tab-content active">
+                            <form id="consultaForm" class="consulta-form">
+                                <div class="input-group">
+                                    <label for="cuit">CUIT / CUIL</label>
+                                    <div class="input-wrapper">
+                                        <input 
+                                            type="text" 
+                                            id="cuit" 
+                                            name="cuit" 
+                                            placeholder="20-12345678-9"
+                                            maxlength="13"
+                                            required
+                                        >
+                                        <i class="fas fa-id-card input-icon"></i>
+                                    </div>
+                                    <small class="input-help">Formato: XX-XXXXXXXX-X</small>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary" id="consultarBtn">
+                                    <i class="fas fa-search"></i>
+                                    <span>Consultar Deudas</span>
+                                    <div class="spinner" style="display: none;">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </div>
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <!-- Tab: Búsqueda por Nombre -->
+                        <div id="tabNombre" class="tab-content" style="display: none;">
+                            <form id="busquedaNombreForm" class="consulta-form">
+                                <div class="input-row">
+                                    <div class="input-group">
+                                        <label for="apellido">Apellido *</label>
+                                        <div class="input-wrapper">
+                                            <input 
+                                                type="text" 
+                                                id="apellido" 
+                                                name="apellido" 
+                                                placeholder="Ej: GONZALEZ"
+                                                required
+                                            >
+                                            <i class="fas fa-user input-icon"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="input-group">
+                                        <label for="nombre">Nombre (opcional)</label>
+                                        <div class="input-wrapper">
+                                            <input 
+                                                type="text" 
+                                                id="nombre" 
+                                                name="nombre" 
+                                                placeholder="Ej: JUAN"
+                                            >
+                                            <i class="fas fa-user input-icon"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <small class="input-help">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Busca en la base de monotributistas AFIP (6M+ registros)
+                                </small>
+                                
+                                <button type="submit" class="btn btn-primary" id="buscarNombreBtn">
+                                    <i class="fas fa-search"></i>
+                                    <span>Buscar Contribuyentes</span>
+                                    <div class="spinner" style="display: none;">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </div>
+                                </button>
+                            </form>
+                            
+                            <!-- Resultados de búsqueda por nombre -->
+                            <div id="resultadosBusquedaNombre" class="resultados-busqueda" style="display: none;">
+                                <div class="resultados-header">
+                                    <h3><i class="fas fa-users"></i> Resultados de Búsqueda</h3>
+                                    <span id="totalResultados" class="badge"></span>
+                                </div>
+                                <div id="listaResultados" class="lista-resultados">
+                                    <!-- Se llena dinámicamente -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Loading State -->
+            <section id="loadingSection" class="loading-section" style="display: none;">
+                <div class="card">
+                    <div class="loading-content">
+                        <div class="spinner-large">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                        <h3>Consultando información...</h3>
+                        <p>Esto puede tomar unos segundos</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section id="resultsSection" class="results-section" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-bar"></i> Resultados de la Consulta</h2>
+                        <button class="btn btn-secondary" onclick="nuevaConsulta()">
+                            <i class="fas fa-plus"></i> Nueva Consulta
+                        </button>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- Resumen General -->
+                        <div id="resumenGeneral" class="resumen-general">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+
+                        <!-- Deudas por Banco -->
+                        <div id="deudasPorBanco" class="deudas-por-banco">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Error Section -->
+            <section id="errorSection" class="error-section" style="display: none;">
+                <div class="card error-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-exclamation-triangle"></i> Error en la Consulta</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="errorMessage" class="error-message">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+                        <button class="btn btn-primary" onclick="nuevaConsulta()">
+                            <i class="fas fa-redo"></i> Intentar Nuevamente
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+         <footer class="footer">
+             <div class="footer-content">
+                 <div class="footer-main">
+                     <div class="footer-brand">
+                         <i class="fas fa-code"></i>
+                         <span>Desarrollado por <strong>Lucas Desimone</strong></span>
+                     </div>
+                     <div class="footer-info">
+                         <span class="footer-badge">Social Engineering Village 2025</span>
+                     </div>
+                   </div>
+               </div>
+         </footer>
+    </div>
+
+
+    <!-- Disclaimer Flotante -->
+    <div class="disclaimer-floating" id="disclaimerFloating">
+        <div class="disclaimer-toggle" onclick="toggleDisclaimer()">
+            <i class="fas fa-info-circle"></i>
+        </div>
+        <div class="disclaimer-content-floating" id="disclaimerContent">
+            <div class="disclaimer-header-floating">
+                <i class="fas fa-shield-alt"></i>
+                <h4>Información Importante</h4>
+                <button class="disclaimer-close" onclick="toggleDisclaimer()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="disclaimer-body">
+                <div class="disclaimer-item-floating">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Fines educativos y de concientización</span>
+                </div>
+                <div class="disclaimer-item-floating">
+                    <i class="fas fa-database"></i>
+                    <span>Datos de API oficial del BCRA</span>
+                </div>
+                <div class="disclaimer-item-floating">
+                    <i class="fas fa-lock"></i>
+                    <span>No almacena datos personales</span>
+                </div>
+            </div>
+            <div class="disclaimer-footer-floating">
+                <strong>FinancialAR OSINT</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Información Legal -->
+    <div id="disclaimerModal" class="modal modern-modal" style="display: none;">
+        <div class="modal-content modern-modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-shield-alt"></i>
+                    <h2>Información Legal</h2>
+                </div>
+                <button class="modal-close" onclick="cerrarModalDisclaimer()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="disclaimer-section">
+                    <div class="disclaimer-item">
+                        <i class="fas fa-graduation-cap"></i>
+                        <div class="disclaimer-text">
+                            <h3>Propósito Educativo</h3>
+                            <p>FinancialAR OSINT es una herramienta educativa para concientización sobre inteligencia financiera e ingeniería social.</p>
+                        </div>
+                    </div>
+                    <div class="disclaimer-item">
+                        <i class="fas fa-database"></i>
+                        <div class="disclaimer-text">
+                            <h3>Fuente de Datos</h3>
+                            <p>Los datos se obtienen directamente de la API oficial del Banco Central de la República Argentina (BCRA).</p>
+                        </div>
+                    </div>
+                    <div class="disclaimer-item">
+                        <i class="fas fa-lock"></i>
+                        <div class="disclaimer-text">
+                            <h3>Privacidad</h3>
+                            <p><strong>Importante:</strong> Esta herramienta no almacena ni procesa datos personales. Todas las consultas se realizan directamente a la API del BCRA.</p>
+                        </div>
+                    </div>
+                    <div class="disclaimer-item">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div class="disclaimer-text">
+                            <h3>Responsabilidad</h3>
+                            <p>Los resultados mostrados son informativos. Para decisiones financieras importantes, consulte con un profesional.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="cerrarModalDisclaimer()">
+                    <i class="fas fa-check"></i> Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalles Técnicos -->
+    <div id="tecnicoModal" class="modal modern-modal" style="display: none;">
+        <div class="modal-content modern-modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-cogs"></i>
+                    <h2>Detalles Técnicos</h2>
+                </div>
+                <button class="modal-close" onclick="cerrarModalTecnico()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="tech-section">
+                    <div class="tech-item">
+                        <i class="fas fa-code"></i>
+                        <div class="tech-text">
+                            <h3>Desarrollo</h3>
+                            <p>Python Flask + HTML/CSS/JavaScript</p>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-database"></i>
+                        <div class="tech-text">
+                            <h3>API</h3>
+                            <p>BCRA Central de Deudores v1.0</p>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <div class="tech-text">
+                            <h3>Seguridad</h3>
+                            <p>Sin almacenamiento de datos personales</p>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-mobile-alt"></i>
+                        <div class="tech-text">
+                            <h3>Responsive</h3>
+                            <p>Diseño adaptativo para todos los dispositivos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="cerrarModalTecnico()">
+                    <i class="fas fa-check"></i> Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalles de Deuda -->
+    <div id="detallesModal" class="modal modern-modal" style="display: none;">
+        <div class="modal-content modern-modal-content detalles-modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-info-circle"></i>
+                    <h2>Detalles de Deuda</h2>
+                </div>
+                <button class="modal-close" onclick="cerrarModalDetalles()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="detallesModalBody">
+                <!-- Se llena dinámicamente -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="cerrarModalDetalles()">
+                    <i class="fas fa-check"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
+

@@ -1,0 +1,4 @@
+# Este directorio contendrá la base de datos AFIP
+# 
+# Para crear la base de datos, ejecuta:
+# python3 scripts/import_afip_monotributo.py -i /ruta/al/archivo_afip.txt
